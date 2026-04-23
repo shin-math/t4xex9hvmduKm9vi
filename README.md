@@ -1,348 +1,391 @@
-# Candidate Ranking System Using Sentence-BERT
-## Problem Statement
+# AI-Powered Candidate Ranking System using Sentence-BERT
 
-Talent sourcing companies face significant challenges in identifying suitable candidates for specific job roles. The traditional manual screening process requires recruiters to review large numbers of profiles, making it time-consuming, inconsistent, and prone to bias.
+## Project Overview
 
-The objective of this project is to design an **automated candidate ranking system** that identifies and ranks candidates based on their relevance to predefined role-specific keywords.
+Recruiters often spend significant time manually reviewing hundreds of candidate profiles to identify suitable applicants for specific job roles. This process is time-consuming, inconsistent, and prone to human bias.
 
-For this project, the keyword search focus is:
+This project presents an **AI-powered candidate ranking system** that automatically identifies and ranks candidates based on their relevance to predefined job keywords using **semantic similarity techniques powered by Sentence-BERT (SBERT)**.
 
-**"Aspiring Human Resources"**
+The system improves recruiter efficiency by:
 
-**"Seeking Human Resources"**
+✔ Ranking candidates based on relevance  
+✔ Dynamically improving results using recruiter feedback  
+✔ Filtering irrelevant candidates  
+✔ Determining adaptive selection cutoffs  
+✔ Reducing bias through automated ranking logic  
 
-The system must:
+---
 
-- Rank candidates based on job relevance
-- Improve ranking dynamically using recruiter feedback
-- Filter irrelevant candidates
-- Determine a generalizable cut-off threshold
-- Reduce human bias through automation
-## Dataset Overview
+# Business Problem
+
+Traditional candidate screening methods rely on:
+
+- Manual keyword search
+- Human judgment
+- Static filtering rules
+
+These approaches:
+
+- Miss relevant candidates due to wording differences  
+- Require significant manual effort  
+- Introduce bias into decision-making  
+
+The goal of this project was to **build an intelligent ranking system** that:
+
+- Understands job relevance semantically  
+- Learns from recruiter feedback  
+- Produces scalable, fair, and consistent rankings  
+
+---
+
+# Dataset Overview
 
 The dataset contains **104 candidate records** collected from sourcing platforms.
 
-Features
-| Column       | Description                        |
-| ------------ | ---------------------------------- |
-| `id`         | Unique candidate identifier        |
-| `job_title`  | Candidate job title                |
-| `location`   | Candidate location                 |
-| `connection` | Number of professional connections |
+### Features
 
-Target
-| Column | Description                                            |
-| ------ | ------------------------------------------------------ |
-| `fit`  | Expected candidate relevance score (used conceptually) |
+| Column | Description |
+|-------|-------------|
+| id | Unique candidate identifier |
+| job_title | Candidate job title |
+| location | Candidate location |
+| connection | Number of professional connections |
 
-## Exploratory Data Analysis (EDA)
+### Target (Conceptual)
 
-Exploratory Data Analysis was conducted to understand candidate distribution patterns and prepare the dataset for modeling.
+| Column | Description |
+|-------|-------------|
+| fit | Expected relevance score |
 
-## Key Observations
-**Connections Distribution**
-- Many candidates had **500+ professional connections**
-- Over **40 candidates** belonged to this category
-- High connections were considered an indicator of professional reach
+---
 
-**Visualizations used:**
+# Tools & Technologies
 
-- Histogram of connection distribution
-- Boxplot to detect outliers
+- Python
+- Sentence-BERT (SBERT)
+- Scikit-learn
+- Pandas
+- NumPy
+- Matplotlib
+- Cosine Similarity
+- Natural Language Processing (NLP)
 
-**HR Keyword Presence**
+---
+
+# Project Workflow — Step-by-Step
+
+This project follows a structured data science pipeline.
+
+---
+
+## Step 1 — Data Cleaning & Preprocessing
+
+Raw data contained inconsistencies such as:
+
+- Mixed text formatting  
+- Special characters  
+- Duplicate records  
+- Non-standard connection values  
+
+### Cleaning Actions
+
+- Converted text to lowercase  
+- Removed punctuation  
+- Normalized whitespace  
+- Converted `"500+" → 500`  
+- Removed duplicate records  
+- Standardized job titles  
+
+### Why This Matters
+
+Clean data ensures:
+
+- Reliable similarity calculations  
+- Consistent ranking logic  
+- Reduced noise in modeling  
+
+---
+
+## Step 2 — Feature Engineering
 
 A new feature was created:
 
-contains_hr
+### contains_hr
 
-This detects whether job titles contain the phrase:
+This identifies whether job titles contain:
+Human Resources
 
-human resources
 
-Result:
+This allowed prioritization of HR-related candidates.
 
-- 61 candidates contained HR-related keywords
-- HR candidates were prioritized during filtering
+---
 
-Visualization:
+## Step 3 — Embedding Generation
 
-- Bar plot showing HR vs Non-HR candidates
-
-**Data Cleaning Steps**
-
-The following preprocessing steps were applied:
-
-- Converted text to lowercase
-- Removed punctuation and special characters
-- Normalized whitespace
-- Converted "500+" connections to numeric value (500)
-- Removed duplicate records while ignoring id
-- Standardized job titles and locations
-
-These steps ensured consistent and reliable data processing.
-
-## Modeling Approach
-
-The ranking system was developed using **semantic similarity techniques** powered by:
+Job titles were converted into **numerical vectors** using:
 
 **Sentence-BERT (SBERT)**
 
-Sentence-BERT is a deep learning model designed to generate meaningful sentence-level embeddings that capture semantic meaning.
+SBERT generates semantic embeddings that capture **meaning**, not just keywords.
 
-**Why Sentence-BERT Was Used**
+### Why SBERT Was Selected
 
-Traditional keyword-based approaches such as TF-IDF rely on exact word matching. These methods fail when synonyms or alternative phrasing are used.
+Traditional methods like TF-IDF:
 
-Sentence-BERT improves performance by:
+❌ Match only exact words  
 
-- Understanding sentence meaning
-- Recognizing similar phrases
-- Handling variations in wording
-- Producing higher-quality rankings
+SBERT:
 
-TF-IDF was considered as a baseline conceptually, while Sentence-BERT was used as the primary ranking model.
+✔ Understands sentence meaning  
+✔ Handles synonyms  
+✔ Improves ranking accuracy  
 
-## System Workflow
+---
 
-The project follows a structured workflow:
+## Step 4 — Similarity Calculation
 
-**Step 1 — Data Cleaning**
+Cosine similarity was used to compare:
 
-Job titles and locations were cleaned to remove noise and ensure consistency.
+- Candidate embeddings  
+- Target keyword embedding  
 
-Connections were normalized:
+Output:
 
-"500+" → 500
+**Similarity Score**
 
-Duplicate rows were removed to prevent ranking bias.
+This represents candidate relevance.
 
-**Step 2 — Embedding Generation**
+---
 
-Job titles were converted into numeric vectors using Sentence-BERT.
-
-Keywords were also converted into embeddings:
-
-"Aspiring Human Resources Seeking Human Resources"
-
-This allowed semantic comparison between candidates and target roles.
-
-**Step 3 — Similarity Calculation**
-
-Cosine similarity was calculated between:
-
-- Candidate job title embeddings
-- Keyword embedding
-
-This generated:
-
-Similarity Score
-
-which represents candidate relevance.
-
-**Step 4 — Initial Ranking**
+## Step 5 — Initial Candidate Ranking
 
 A weighted scoring formula was used:
 
 Initial Fit Score =
-0.85 × Similarity +
+0.85 × Similarity Score
++
 0.15 × Connection Score
 
-This balances:
 
-- relevance
-- professional strength
+### Why Connections Were Included
 
-Candidates were ranked based on this score.
+Professional connections were used as a proxy for:
 
-## How the Solution Works and Improves Ranking with Starring
-**Objective**
+- Industry engagement  
+- Professional network strength  
 
-Improve ranking quality using recruiter feedback.
+---
 
-**Method**
+## Step 6 — Dynamic Ranking Using Recruiter Feedback
 
-When a recruiter **stars a candidate**, the system:
+To simulate real-world hiring workflows:
 
-- Extracts embedding of starred candidate
-- Computes similarity between all candidates and starred candidate
-- Updates ranking scores
+Recruiters can **"star" candidates**.
 
-Formula used:
+The system then:
+
+1. Extracts embedding of starred candidates  
+2. Computes similarity to other candidates  
+3. Updates ranking scores  
+
+### Final Ranking Formula
 
 Final Score =
-0.6 × Initial Fit +
+0.6 × Initial Fit
++
 0.4 × Star Similarity
 
-**Evidence of Ranking Improvement**
 
-Ranking lists were compared:
+### Result
 
-- Before starring
-- After starring
+Candidates similar to starred profiles:
 
-Observation:
+⬆ Move higher in rankings  
+⬇ Less relevant candidates move lower  
 
-- Candidates similar to the starred profile moved higher
-- Less relevant candidates moved lower
-- Ranking distribution became more refined
+This introduces **adaptive learning**.
 
-This demonstrates:
+---
 
-- adaptive learning
-- improved candidate prioritization
+## Step 7 — Filtering Irrelevant Candidates
 
-## Filtering Irrelevant Candidates
-**Objective**
+Two filtering strategies were applied.
 
-Remove candidates that should not appear in the ranking list.
+### 1. Similarity Threshold
 
-**Method**
-
-Two filtering techniques were applied.
-
-**Similarity Threshold Filtering**
-
-Candidates below threshold:
-
+Candidates with:
 initial_fit < 0.25
+
 
 were removed.
 
-This eliminates weak matches.
+### 2. Keyword Retention
 
-**HR Keyword Filtering**
+HR-related candidates were retained even if:
 
-Candidates containing:
+- Similarity was slightly lower
 
-human resources
-
-were retained even if similarity was slightly lower.
-
-Filtering rule:
-
+### Filtering Rule
 Keep candidate if:
 
 initial_fit > threshold
 OR
 contains_hr = True
 
-**Result**
 
-Irrelevant candidates were filtered effectively, improving ranking accuracy and reducing noise.
+---
 
-## Determining a General Cut-Off Point
-**Objective**
+## Step 8 — Determining Adaptive Cutoff
 
-Find a cut-off that works across different roles.
+Instead of fixed thresholds:
 
-**Method**
+A dynamic percentile method was used.
+Cutoff = 75th percentile of scores
 
-A **percentile-based dynamic cutoff** was used.
 
-Formula:
+### Benefits
 
-Cutoff = 75th percentile of initial_fit scores
+✔ Works across different job roles  
+✔ Prevents arbitrary filtering  
+✔ Improves scalability  
 
-Candidates above this threshold were selected.
+---
 
-**Why This Works**
+## Step 9 — Bias Reduction Techniques
 
-Percentile-based cutoffs adapt automatically to different score distributions.
+Bias-aware design was incorporated.
 
-Benefits:
+The system intentionally excluded:
 
-- Works across multiple job roles
-- Avoids fixed arbitrary thresholds
-- Preserves high-potential candidates
-- Improves scalability
+- Gender  
+- Age  
+- Nationality  
+- Personal identifiers  
 
-Visualization included:
+Ranking relied only on:
 
-- Score distribution plot
-- Vertical cutoff marker
+✔ Professional attributes  
+✔ Semantic similarity  
+✔ Numeric scoring  
 
-## Preventing Human Bias
-**Objective**
+---
 
-Reduce subjectivity in hiring decisions.
+# Model Comparison
 
-**Implemented Methods**
+Multiple ranking strategies were tested to validate performance.
 
-**Remove Sensitive Information**
+Comparisons included:
 
-The system does NOT use:
+- Initial ranking vs updated ranking  
+- Single-star vs multi-star ranking  
+- Filtered vs unfiltered outputs  
 
-- Gender
-- Nationality
-- Age
-- Personal identifiers
+Observation:
 
-Only professional attributes were used.
+✔ Ranking quality improved after feedback  
+✔ Irrelevant candidates reduced  
+✔ Ranking distribution became more meaningful  
 
-**Automated Ranking**
+---
 
-All candidate ranking decisions were based on:
-
-- semantic similarity
-- numeric scoring
-
-No manual judgment influenced rankings.
-
-**Multi-Star Feedback System**
-
-Instead of relying on a single recruiter:
-
-Multiple starred candidates were used.
-
-Formula:
-
-Multi-Star Score =
-Average similarity to multiple starred candidates
-
-**Additional Future Bias-Reduction Ideas**
-
-To further improve fairness:
-
-- Perform periodic fairness audits
-- Use anonymized candidate identifiers
-- Train models on diverse datasets
-- Apply explainable AI techniques
-- Monitor demographic balance (if data available)
-## Final Results
+# Key Results
 
 The system successfully:
 
-- Ranked candidates based on semantic relevance
-- Improved ranking dynamically using recruiter feedback
-- Filtered irrelevant candidates effectively
-- Determined adaptive cutoffs
-- Reduced bias through automated decision-making
+✔ Ranked candidates based on semantic relevance  
+✔ Improved rankings dynamically using recruiter feedback  
+✔ Filtered weak matches  
+✔ Determined adaptive cutoffs  
+✔ Reduced ranking bias  
 
-## Key Insights
-- HR-related candidates consistently ranked highest
-- Semantic similarity improved relevance detection
-- Percentile cutoffs enhanced adaptability
-- Multi-star ranking improved fairness
-- Connection strength improved ranking quality
-## Output Files
+---
+
+# Output Files
 
 Generated outputs:
-
 final_ranked_sbert_candidates.csv
-
 multi_star_ranked_candidates.csv
 
-These contain ranked candidate results.
 
-## Final Outcome
+These contain:
 
-This project demonstrates a **robust AI-powered candidate ranking system** capable of:
+- Ranked candidates  
+- Updated scores  
+- Final selections  
 
-- semantic understanding
-- adaptive ranking
-- intelligent filtering
-- scalable threshold selection
-- bias-aware automation
+---
 
-The system significantly improves recruiter efficiency and provides a foundation for building advanced talent matching platforms.
+# Example Use Cases
+
+This system can be applied to:
+
+✔ Talent acquisition platforms  
+✔ Resume screening systems  
+✔ Job recommendation engines  
+✔ Recruitment automation tools  
+
+---
+
+# Future Improvements
+
+Possible extensions include:
+
+- Integration with real-time applicant tracking systems  
+- Adding resume text parsing  
+- Incorporating explainable AI methods  
+- Training role-specific models  
+- Deploying as an API or web service  
+
+---
+
+# My Contribution (For Recruiters & Hiring Managers)
+
+In this project, I independently:
+
+✔ Designed the end-to-end ranking pipeline  
+✔ Performed data cleaning and feature engineering  
+✔ Implemented Sentence-BERT embeddings  
+✔ Built similarity-based ranking logic  
+✔ Developed dynamic feedback-based ranking updates  
+✔ Designed filtering and cutoff strategies  
+✔ Ensured bias-aware ranking design  
+✔ Generated final ranked outputs  
+
+This project demonstrates my ability to:
+
+- Build real-world NLP systems  
+- Apply machine learning to business workflows  
+- Design scalable ranking systems  
+- Translate business problems into technical solutions  
+
+---
+
+# Key Skills Demonstrated
+
+- Natural Language Processing (NLP)
+- Machine Learning
+- Semantic Similarity
+- Feature Engineering
+- Model Evaluation
+- Ranking Systems
+- Python Development
+- Data Cleaning
+- Bias-Aware Modeling
+- Business Problem Solving
+
+---
+
+# Conclusion
+
+This project demonstrates the development of a **scalable, intelligent candidate ranking system** capable of improving recruiter productivity and reducing bias in hiring workflows.
+
+By combining **semantic embeddings**, **dynamic feedback learning**, and **adaptive filtering**, this solution showcases how AI can meaningfully enhance real-world talent acquisition systems.
+
+This work highlights my ability to:
+
+✔ Build production-style machine learning pipelines  
+✔ Solve business-driven data problems  
+✔ Deliver interpretable and scalable solutions  
+
+I welcome feedback and discussion on this work.
+
